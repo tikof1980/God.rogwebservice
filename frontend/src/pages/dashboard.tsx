@@ -29,6 +29,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [revenue, setRevenue] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -44,9 +45,10 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const [list, s] = await Promise.all([api.listCompanies(), api.stats()]);
+      const [list, s, rev] = await Promise.all([api.listCompanies(), api.stats(), api.revenueStats()]);
       setCompanies(list);
       setStats(s);
+      setRevenue(rev);
     } catch (err: any) {
       if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
         router.push('/login');
@@ -91,6 +93,24 @@ export default function Dashboard() {
           <StatCard label="Actives" value={stats?.active ?? '—'} color="var(--green)" />
           <StatCard label="Suspendues" value={stats?.suspended ?? '—'} color="var(--text-lo)" />
           <StatCard label="Expirées" value={stats?.expired ?? '—'} color="var(--red)" />
+        </div>
+
+        <div style={styles.statsRow}>
+          <StatCard
+            label="Revenus aujourd'hui"
+            value={revenue ? `${revenue.dailyRevenue.toLocaleString('fr-FR')} F` : '—'}
+            color="var(--gold)"
+          />
+          <StatCard
+            label="Revenus ce mois"
+            value={revenue ? `${revenue.monthlyRevenue.toLocaleString('fr-FR')} F` : '—'}
+            color="var(--gold)"
+          />
+          <StatCard
+            label="Revenus totaux"
+            value={revenue ? `${revenue.totalRevenue.toLocaleString('fr-FR')} F` : '—'}
+            color="var(--gold)"
+          />
         </div>
 
         {stats?.expiringSoon?.length > 0 && (

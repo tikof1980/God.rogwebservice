@@ -24,6 +24,7 @@ export function WorkspaceLayout({ children, active }: { children: ReactNode; act
     { key: 'today', label: "Aujourd'hui", href: '/workspace' },
     { key: 'appointments', label: 'Rendez-vous', href: '/workspace/appointments' },
     { key: 'clients', label: 'Clients', href: '/workspace/clients' },
+    { key: 'payments', label: 'Abonnement', href: '/workspace/payments' },
   ];
 
   return (

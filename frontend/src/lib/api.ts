@@ -84,4 +84,17 @@ export const api = {
       body: JSON.stringify({ status, amountPaid }),
     }),
   removeAppointment: (id: string) => request(`/api/appointments/${id}`, { method: 'DELETE' }),
+
+  // --- Paiements (espace entreprise) ---
+  initiatePayment: (payload: Record<string, unknown>) =>
+    request('/api/payments/initiate', { method: 'POST', body: JSON.stringify(payload) }),
+  myPayments: () => request('/api/payments/mine'),
+  devConfirmPayment: (reference: string) =>
+    request(`/api/payments/dev-confirm/${reference}`, { method: 'POST' }),
+
+  // --- Paiements (super admin) ---
+  allPayments: () => request('/api/payments'),
+  revenueStats: () => request('/api/payments/revenue'),
+  recordManualPayment: (payload: Record<string, unknown>) =>
+    request('/api/payments/manual', { method: 'POST', body: JSON.stringify(payload) }),
 };

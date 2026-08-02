@@ -24,14 +24,23 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - Toutes ces routes exigent le rôle `company_admin` ou `employee`, et sont scopées via le `companyId` du JWT (jamais via un paramètre d'URL modifiable)
   - `TenantActiveGuard` : revérifie à **chaque requête** que l'entreprise est active — une suspension prend effet immédiatement, même avec un JWT encore valide
 
+- **Module Paiements** (architecture d'adaptateurs — Wave, Orange Money, MTN Money, carte, manuel)
+  - `POST /api/payments/initiate` (entreprise) — démarre une transaction, renvoie une référence + `checkoutUrl`
+  - `POST /api/payments/webhook/:provider` (public) — callback provider ; confirme le paiement et **renouvelle automatiquement l'abonnement**, de façon idempotente
+  - `POST /api/payments/manual` (super admin) — enregistrement d'un paiement hors-ligne (espèces, virement)
+  - `GET /api/payments/mine` (entreprise) / `GET /api/payments` + `/revenue` (super admin)
+  - Chaque provider implémente l'interface `PaymentProviderAdapter` (`/backend/src/payments/providers/`) ; un `StubPaymentAdapter` simule Wave/Orange Money/MTN pour le développement, sans appel réseau externe
+  - **Pour brancher un vrai provider en production** : créer une classe (ex: `WaveAdapter`) implémentant `PaymentProviderAdapter` selon la doc officielle du provider, vérifier la signature du webhook dans `verifyWebhookSignature()`, puis la sélectionner dans `PaymentsService`
+  - Testé de bout en bout : paiement Wave simulé → confirmation webhook → abonnement renouvelé automatiquement, idempotence vérifiée, stats de revenus (jour/mois/total)
+
 - **Frontend Next.js** (`/frontend`)
   - `/login` → redirige selon le rôle (`super_admin` → `/dashboard`, sinon → `/workspace`)
-  - `/dashboard` — Super Dashboard : stats globales, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
-  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité
+  - `/dashboard` — Super Dashboard : stats globales, revenus, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
+  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement
 
 ## Ce qui reste à brancher (hors portée de ce socle)
 
-- Paiements réels : Wave, Orange Money, MTN Money, cartes, QR code
+- Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
 - Notifications : WhatsApp Business API, SMS, emails automatiques, rappels J-7/J-3/J-1 (les entités le prévoient déjà — `reminder24hSent`/`reminder2hSent`/`reminder30minSent` sur `Appointment`, `findPendingReminders()` dans `AppointmentsService` — il manque le scheduler + les providers d'envoi)
 - IA par entreprise (réponse client 24/7) + IA centrale d'analyse de la plateforme
 - Applications mobiles natives (Flutter) et PWA
