@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --ink: #0b0f16;
+  --panel: #121826;
+  --panel-raised: #182035;
+  --hairline: #232c40;
+  --text-hi: #eef1f7;
+  --text-lo: #8891a5;
+  --gold: #d4a643;
+  --gold-dim: #8a7237;
+  --green: #34d399;
+  --red: #f2685c;
+  --blue: #5b9bf2;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  padding: 0;
+  margin: 0;
+  background: var(--ink);
+  color: var(--text-hi);
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+.display {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+::selection { background: var(--gold-dim); color: white; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
