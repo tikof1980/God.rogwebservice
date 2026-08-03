@@ -40,16 +40,26 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - `StubChannelAdapter` simule l'envoi (log console) sans appel réseau externe ; **pour brancher un vrai canal en production**, implémenter `NotificationChannelAdapter` (`/backend/src/notifications/providers/`) pour WhatsApp Business API / un agrégateur SMS local / SMTP, puis le sélectionner dans `NotificationsService`
   - Testé de bout en bout : rappel RDV 24h envoyé + flag marqué, rappel expiration J-7 envoyé par email et WhatsApp simultanément, idempotence vérifiée sur relance
 
+- **Module IA par entreprise** (Google Gemini par défaut — palier gratuit généreux, contrairement à l'API Claude qui n'en a pas en production)
+  - Sélection automatique du fournisseur : `GeminiAdapter` (réel, appelle l'API Gemini) si `GEMINI_API_KEY` est définie, sinon `StubAiAdapter` (simulation, pour développer/tester sans clé ni accès réseau)
+  - Historique de conversation par client (`AiMessage`, tri par séquence auto-incrémentée pour un ordre chronologique fiable même sur des échanges rapprochés), utilisé comme contexte à chaque nouvelle génération
+  - `PATCH /api/ai/settings` (company_admin) — activer/désactiver l'IA, personnaliser ses instructions, associer un `whatsappPhoneNumberId`
+  - `POST /api/ai/test-chat` (entreprise) — chat de test intégré au dashboard, sans dépendre de WhatsApp
+  - `POST /api/ai/webhook/whatsapp` (public) — point d'entrée des messages entrants ; en production, résout l'entreprise via `whatsappPhoneNumberId` (mappé sur le `phone_number_id` Meta), génère la réponse, puis l'envoie via le canal WhatsApp déjà construit dans le module Notifications
+  - **Pour l'activer réellement** : créer une clé gratuite sur https://aistudio.google.com/apikey, la définir en variable d'environnement `GEMINI_API_KEY` ; pour WhatsApp, enregistrer une app WhatsApp Business (Meta for Developers), renseigner `whatsappPhoneNumberId` par entreprise et brancher le vrai webhook Meta (vérification de signature à ajouter)
+  - Testé de bout en bout avec le stub : historique multi-tours, activation/désactivation, webhook entrant → réponse générée → notification WhatsApp journalisée
+
 - **Frontend Next.js** (`/frontend`)
   - `/login` → redirige selon le rôle (`super_admin` → `/dashboard`, sinon → `/workspace`)
   - `/dashboard` — Super Dashboard : stats globales, revenus, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
-  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement, journal des notifications envoyées
+  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement, journal des notifications, réglages + chat de test de l'assistant IA
 
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
-- Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`)
-- IA par entreprise (réponse client 24/7) + IA centrale d'analyse de la plateforme
+- Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
+- Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé)
+- IA centrale d'analyse de la plateforme (détection d'anomalies, rapports automatiques pour Rogweb Service)
 - Applications mobiles natives (Flutter) et PWA
 - Déploiement Docker/Kubernetes et passage effectif à PostgreSQL/Redis
 

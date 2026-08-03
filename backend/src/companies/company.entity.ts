@@ -79,6 +79,12 @@ export class Company {
   @Column({ type: 'text', nullable: true })
   aiPersonality: string;
 
+  // Identifiant du numéro WhatsApp Business (phone_number_id Meta) associé
+  // à cette entreprise — permet, en production, de savoir à quelle entreprise
+  // appartient un message entrant sur le webhook WhatsApp partagé.
+  @Column({ nullable: true })
+  whatsappPhoneNumberId: string;
+
   // Dernier seuil de rappel d'expiration envoyé (7, 3, 1 ou 0 jour) — évite
   // de renvoyer plusieurs fois la même alerte le même jour. Remis à null
   // à chaque renouvellement/réactivation (nouveau cycle).

@@ -26,6 +26,7 @@ export function WorkspaceLayout({ children, active }: { children: ReactNode; act
     { key: 'clients', label: 'Clients', href: '/workspace/clients' },
     { key: 'payments', label: 'Abonnement', href: '/workspace/payments' },
     { key: 'notifications', label: 'Notifications', href: '/workspace/notifications' },
+    { key: 'ai', label: 'Assistant IA', href: '/workspace/ai' },
   ];
 
   return (

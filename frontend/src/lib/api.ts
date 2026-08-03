@@ -101,4 +101,13 @@ export const api = {
   // --- Notifications ---
   myNotifications: () => request('/api/notifications/mine'),
   allNotifications: () => request('/api/notifications'),
+
+  // --- IA (espace entreprise) ---
+  aiInfo: () => request('/api/ai/info'),
+  aiSettings: () => request('/api/ai/settings'),
+  updateAiSettings: (payload: Record<string, unknown>) =>
+    request('/api/ai/settings', { method: 'PATCH', body: JSON.stringify(payload) }),
+  aiTestChat: (message: string, clientPhone?: string) =>
+    request('/api/ai/test-chat', { method: 'POST', body: JSON.stringify({ message, clientPhone }) }),
+  aiConversations: () => request('/api/ai/conversations'),
 };

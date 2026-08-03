@@ -17,6 +17,7 @@ export enum NotificationCategory {
   SUBSCRIPTION_EXPIRY = 'subscription_expiry',
   SUBSCRIPTION_BLOCKED = 'subscription_blocked',
   PAYMENT_CONFIRMATION = 'payment_confirmation',
+  AI_REPLY = 'ai_reply',
   OTHER = 'other',
 }
 

@@ -98,6 +98,19 @@ export class CompaniesService {
     return this.companiesRepo.save(company);
   }
 
+  async updateAiSettings(
+    id: string,
+    dto: { aiEnabled?: boolean; aiPersonality?: string; whatsappPhoneNumberId?: string },
+  ): Promise<Company> {
+    const company = await this.findOne(id);
+    Object.assign(company, dto);
+    return this.companiesRepo.save(company);
+  }
+
+  async findByWhatsappPhoneNumberId(phoneNumberId: string): Promise<Company | null> {
+    return this.companiesRepo.findOne({ where: { whatsappPhoneNumberId: phoneNumberId } });
+  }
+
   async suspend(id: string): Promise<Company> {
     const company = await this.findOne(id);
     company.status = CompanyStatus.SUSPENDED;
