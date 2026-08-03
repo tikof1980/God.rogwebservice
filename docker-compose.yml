@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-god_rogwebservice}
+      POSTGRES_USER: ${POSTGRES_USER:-rogweb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rogweb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rogweb_internal
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET}
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-god_rogwebservice}
+      DB_USER: ${POSTGRES_USER:-rogweb}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - rogweb_internal
+      - rogweb_public
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3001}
+    depends_on:
+      - backend
+    networks:
+      - rogweb_public
+    ports:
+      - "3000:3000"
+
+networks:
+  rogweb_internal:
+    # Réseau isolé : seuls backend et postgres s'y trouvent, la base de
+    # données n'est jamais exposée directement à l'extérieur.
+  rogweb_public:
+
+volumes:
+  postgres_data:

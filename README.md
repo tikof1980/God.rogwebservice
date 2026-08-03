@@ -65,13 +65,22 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - Service worker généré automatiquement au build (`next-pwa`) : les appels `/api/*` restent toujours en réseau direct (jamais de cache sur les données métier), le reste des ressources statiques est mis en cache pour un chargement plus rapide et une tolérance aux coupures réseau ponctuelles
   - Le service worker est désactivé en développement (`next dev`) et actif uniquement en production (`next build && next start`)
 
+- **Déploiement Docker / Kubernetes**
+  - `backend/Dockerfile` et `frontend/Dockerfile` : builds multi-étapes, images de production allégées, utilisateur non-root
+  - Le backend bascule automatiquement SQLite (dev, par défaut) / PostgreSQL (prod, via `DB_TYPE=postgres` + `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`) — voir `backend/src/config/database.config.ts`
+  - `docker-compose.yml` (racine) : lance backend + frontend + PostgreSQL en un `docker compose up -d --build` (copier `.env.example` en `.env` d'abord)
+  - `k8s/` : manifests Kubernetes complets pour un vrai cluster — namespace, PostgreSQL en StatefulSet avec volume persistant, backend/frontend en Deployment avec autoscaling horizontal (HPA, 2→10 replicas selon le CPU), Ingress HTTPS (nginx + cert-manager)
+  - **Pour déployer sur un cluster réel** : construire et pousser les images sur un registre (`docker build -t <registre>/god-rogwebservice-backend ./backend`), copier `k8s/01-secrets.example.yaml` en `01-secrets.local.yaml` avec de vraies valeurs, ajuster les noms de domaine dans `40-ingress.yaml`, puis `kubectl apply -f k8s/`
+  - Note : ce sandbox n'a pas Docker installé, donc les Dockerfiles et manifests n'ont pas pu être testés par un vrai build/déploiement ici — seule leur syntaxe (YAML) et la cohérence de la config (bascule SQLite/PostgreSQL testée en local) ont été vérifiées
+
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
 - Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
 - Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé — active à la fois l'IA par entreprise et les rapports de plateforme)
 - Applications mobiles natives (Flutter)
-- Déploiement Docker/Kubernetes et passage effectif à PostgreSQL/Redis
+- Migrations TypeORM réelles avant mise en production sérieuse (actuellement `synchronize: true`, pratique en développement mais risqué en prod)
+- Test réel des images Docker et du déploiement Kubernetes sur un cluster (non testable dans cet environnement de développement)
 
 ## Démarrage local
 

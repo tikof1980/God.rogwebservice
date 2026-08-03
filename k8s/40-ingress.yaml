@@ -1,0 +1,39 @@
+# Nécessite un ingress-controller installé sur le cluster (ex: ingress-nginx)
+# et, pour le HTTPS automatique, cert-manager avec un ClusterIssuer Let's
+# Encrypt déjà configuré. Adapter les noms de domaine avant application.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rogweb-ingress
+  namespace: god-rogwebservice
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.rogwebservice.ci
+        - api.rogwebservice.ci
+      secretName: rogweb-tls
+  rules:
+    - host: app.rogwebservice.ci
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
+    - host: api.rogwebservice.ci
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 3001
