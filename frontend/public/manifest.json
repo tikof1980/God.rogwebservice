@@ -1,0 +1,30 @@
+{
+  "name": "GOD.ROGWEBSERVICE",
+  "short_name": "GOD.ROGWEB",
+  "description": "Plateforme SaaS multi-tenant Rogweb Service — gestion d'entreprises, rendez-vous, clients, paiements et IA.",
+  "start_url": "/login",
+  "display": "standalone",
+  "background_color": "#0b0f16",
+  "theme_color": "#0b0f16",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

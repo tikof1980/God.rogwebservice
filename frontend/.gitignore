@@ -1,3 +1,9 @@
 node_modules/
 .next/
 .env.local
+
+# Générés automatiquement par next-pwa à chaque build — ne pas committer
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map

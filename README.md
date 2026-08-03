@@ -60,12 +60,17 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - `/dashboard` — Super Dashboard : stats globales, revenus, **panneau d'anomalies + génération de rapport IA**, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
   - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement, journal des notifications, réglages + chat de test de l'assistant IA
 
+- **PWA (Progressive Web App)**
+  - Manifest (`/frontend/public/manifest.json`) + icônes générées (192/512/maskable) — installable sur Android, iOS et desktop directement depuis le navigateur ("Ajouter à l'écran d'accueil")
+  - Service worker généré automatiquement au build (`next-pwa`) : les appels `/api/*` restent toujours en réseau direct (jamais de cache sur les données métier), le reste des ressources statiques est mis en cache pour un chargement plus rapide et une tolérance aux coupures réseau ponctuelles
+  - Le service worker est désactivé en développement (`next dev`) et actif uniquement en production (`next build && next start`)
+
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
 - Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
 - Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé — active à la fois l'IA par entreprise et les rapports de plateforme)
-- Applications mobiles natives (Flutter) et PWA
+- Applications mobiles natives (Flutter)
 - Déploiement Docker/Kubernetes et passage effectif à PostgreSQL/Redis
 
 ## Démarrage local
