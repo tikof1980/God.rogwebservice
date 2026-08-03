@@ -73,14 +73,19 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - **Pour déployer sur un cluster réel** : construire et pousser les images sur un registre (`docker build -t <registre>/god-rogwebservice-backend ./backend`), copier `k8s/01-secrets.example.yaml` en `01-secrets.local.yaml` avec de vraies valeurs, ajuster les noms de domaine dans `40-ingress.yaml`, puis `kubectl apply -f k8s/`
   - Note : ce sandbox n'a pas Docker installé, donc les Dockerfiles et manifests n'ont pas pu être testés par un vrai build/déploiement ici — seule leur syntaxe (YAML) et la cohérence de la config (bascule SQLite/PostgreSQL testée en local) ont été vérifiées
 
+- **Application mobile** (`/mobile`) — wrapper Flutter natif autour de la PWA, plutôt qu'une réécriture complète (voir `mobile/README.md` pour la justification et les étapes de mise en place)
+  - Choix assumé : dupliquer toute l'interface en Flutter aurait créé deux bases de code à maintenir indéfiniment pour un gain limité, alors que la PWA est déjà installable
+  - `mobile/lib/main.dart` fourni et complet (WebView, gestion d'erreur hors-ligne, bouton retour Android, ouverture native des liens tel/mailto/WhatsApp) — **non testé ici** car Flutter n'est pas installé dans ce sandbox ; `mobile/README.md` détaille précisément les commandes à lancer chez vous (`flutter create`, remplacement des fichiers fournis, build)
+
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
 - Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
 - Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé — active à la fois l'IA par entreprise et les rapports de plateforme)
-- Applications mobiles natives (Flutter)
+- Scaffold Flutter réel (`flutter create` + build) — voir `mobile/README.md`
 - Migrations TypeORM réelles avant mise en production sérieuse (actuellement `synchronize: true`, pratique en développement mais risqué en prod)
 - Test réel des images Docker et du déploiement Kubernetes sur un cluster (non testable dans cet environnement de développement)
+- Notifications push natives (Firebase Cloud Messaging) dans l'app mobile
 
 ## Démarrage local
 
