@@ -111,3 +111,8 @@ export const api = {
     request('/api/ai/test-chat', { method: 'POST', body: JSON.stringify({ message, clientPhone }) }),
   aiConversations: () => request('/api/ai/conversations'),
 };
+
+export const platformAi = {
+  anomalies: () => request('/api/platform-ai/anomalies'),
+  report: () => request('/api/platform-ai/report'),
+};

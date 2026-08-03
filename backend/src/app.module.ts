@@ -16,6 +16,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import { PaymentsModule } from './payments/payments.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AiModule } from './ai/ai.module';
+import { PlatformAiModule } from './platform-ai/platform-ai.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AiModule } from './ai/ai.module';
     PaymentsModule,
     NotificationsModule,
     AiModule,
+    PlatformAiModule,
   ],
 })
 export class AppModule {}

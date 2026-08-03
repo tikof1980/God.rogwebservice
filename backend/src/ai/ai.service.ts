@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AiMessage, AiMessageRole } from './ai-message.entity';
 import { AiProviderAdapter } from './providers/provider.interface';
-import { GeminiAdapter } from './providers/gemini.adapter';
-import { StubAiAdapter } from './providers/stub.adapter';
+import { createAiProvider } from './providers/provider-factory';
 import { CompaniesService } from '../companies/companies.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationChannel, NotificationCategory } from '../notifications/notification-log.entity';
@@ -20,11 +19,11 @@ export class AiService {
     private companiesService: CompaniesService,
     private notificationsService: NotificationsService,
   ) {
-    // Sélection automatique du fournisseur : Gemini si une clé est
-    // configurée (recommandé — palier gratuit généreux), sinon un stub
-    // qui simule des réponses pour permettre de tester tout le flux.
-    const apiKey = process.env.GEMINI_API_KEY;
-    this.adapter = apiKey ? new GeminiAdapter(apiKey) : new StubAiAdapter();
+    // Sélection automatique du fournisseur via la factory partagée : Gemini
+    // si une clé est configurée (recommandé — palier gratuit généreux),
+    // sinon un stub qui simule des réponses pour permettre de tester tout
+    // le flux (webhook, historique, envoi WhatsApp).
+    this.adapter = createAiProvider();
   }
 
   private buildSystemPrompt(companyName: string, businessType: string, personality?: string): string {

@@ -125,6 +125,13 @@ export class PaymentsService {
     return this.paymentsRepo.find({ order: { createdAt: 'DESC' }, take: 200 });
   }
 
+  /** Paiements en attente depuis plus de `hours` heures — signale un blocage provider probable. */
+  async findStuckPending(hours = 24) {
+    const threshold = new Date(Date.now() - hours * 3600000);
+    const pending = await this.paymentsRepo.find({ where: { status: PaymentStatus.PENDING } });
+    return pending.filter((p) => new Date(p.createdAt) < threshold);
+  }
+
   async revenueStats() {
     const successful = await this.paymentsRepo.find({
       where: { status: PaymentStatus.SUCCESS },

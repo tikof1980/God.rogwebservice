@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { api, clearToken, getSession } from '@/lib/api';
+import { api, clearToken, getSession, platformAi } from '@/lib/api';
 import { LedgerBar } from '@/components/LedgerBar';
 
 const BUSINESS_TYPES = [
@@ -30,6 +30,9 @@ export default function Dashboard() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [revenue, setRevenue] = useState<any>(null);
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [report, setReport] = useState<string>('');
+  const [reportLoading, setReportLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -45,10 +48,16 @@ export default function Dashboard() {
 
   const load = useCallback(async () => {
     try {
-      const [list, s, rev] = await Promise.all([api.listCompanies(), api.stats(), api.revenueStats()]);
+      const [list, s, rev, anom] = await Promise.all([
+        api.listCompanies(),
+        api.stats(),
+        api.revenueStats(),
+        platformAi.anomalies(),
+      ]);
       setCompanies(list);
       setStats(s);
       setRevenue(rev);
+      setAnomalies(anom);
     } catch (err: any) {
       if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
         router.push('/login');
@@ -76,6 +85,18 @@ export default function Dashboard() {
   function logout() {
     clearToken();
     router.push('/login');
+  }
+
+  async function generateReport() {
+    setReportLoading(true);
+    try {
+      const res = await platformAi.report();
+      setReport(res.report);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setReportLoading(false);
+    }
   }
 
   return (
@@ -119,6 +140,50 @@ export default function Dashboard() {
             {stats.expiringSoon.map((c: any) => c.name).join(', ')}
           </div>
         )}
+
+        <div style={styles.aiPanel}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+            <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 16, margin: 0 }}>
+              Analyse IA de la plateforme
+            </h2>
+            <button onClick={generateReport} disabled={reportLoading} style={styles.secondaryBtn}>
+              {reportLoading ? 'Génération…' : 'Générer un rapport'}
+            </button>
+          </div>
+
+          {anomalies.length === 0 ? (
+            <div style={{ color: 'var(--text-lo)', fontSize: 13 }}>Aucune anomalie détectée.</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: report ? 16 : 0 }}>
+              {anomalies.map((a, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13 }}>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      textTransform: 'uppercase',
+                      color:
+                        a.severity === 'critical' ? 'var(--red)' : a.severity === 'warning' ? 'var(--gold)' : 'var(--text-lo)',
+                      border: `1px solid ${a.severity === 'critical' ? 'var(--red)' : a.severity === 'warning' ? 'var(--gold)' : 'var(--hairline)'}`,
+                      borderRadius: 999,
+                      padding: '2px 8px',
+                      marginTop: 2,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {a.severity}
+                  </span>
+                  <span style={{ color: 'var(--text-hi)' }}>{a.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {report && (
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-hi)', background: 'var(--ink)', border: '1px solid var(--hairline)', borderRadius: 8, padding: 14 }}>
+              {report}
+            </div>
+          )}
+        </div>
 
         <div style={styles.toolbar}>
           <h1 style={styles.title}>Entreprises</h1>
@@ -375,6 +440,10 @@ const styles: Record<string, React.CSSProperties> = {
   alertBanner: {
     background: 'rgba(212,166,67,0.08)', border: '1px solid rgba(212,166,67,0.3)',
     color: 'var(--gold)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 20,
+  },
+  aiPanel: {
+    background: 'var(--panel)', border: '1px solid var(--hairline)', borderRadius: 10,
+    padding: '18px 20px', marginBottom: 24,
   },
   toolbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   title: { fontFamily: 'Space Grotesk, sans-serif', fontSize: 20, margin: 0 },

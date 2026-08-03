@@ -49,17 +49,22 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - **Pour l'activer réellement** : créer une clé gratuite sur https://aistudio.google.com/apikey, la définir en variable d'environnement `GEMINI_API_KEY` ; pour WhatsApp, enregistrer une app WhatsApp Business (Meta for Developers), renseigner `whatsappPhoneNumberId` par entreprise et brancher le vrai webhook Meta (vérification de signature à ajouter)
   - Testé de bout en bout avec le stub : historique multi-tours, activation/désactivation, webhook entrant → réponse générée → notification WhatsApp journalisée
 
+- **Module IA centrale de plateforme** (pour Rogweb Service — analyse globale, distinct de l'IA par entreprise)
+  - `GET /api/platform-ai/anomalies` (super admin) — détection déterministe (règles, pas d'IA) : incohérences d'abonnement, paiements bloqués >24h, échecs de notification répétés, entreprises suspendues de longue date. Volontairement indépendante de l'IA générative pour rester fiable même si Gemini est indisponible
+  - `GET /api/platform-ai/report` (super admin) — rapport narratif en français généré par Gemini à partir des stats/revenus/anomalies agrégés ; l'IA met en forme et priorise, les chiffres viennent intégralement des services métier
+  - Réutilise la même factory de fournisseur IA que le module IA par entreprise (`createAiProvider()` dans `/backend/src/ai/providers/provider-factory.ts`) — aucune duplication de la logique Gemini/stub
+  - Testé : anomalie `long_suspended` détectée correctement, paiement en attente non signalé avant 24h (comportement attendu), rapport narratif généré à partir des données réelles
+
 - **Frontend Next.js** (`/frontend`)
   - `/login` → redirige selon le rôle (`super_admin` → `/dashboard`, sinon → `/workspace`)
-  - `/dashboard` — Super Dashboard : stats globales, revenus, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
+  - `/dashboard` — Super Dashboard : stats globales, revenus, **panneau d'anomalies + génération de rapport IA**, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
   - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement, journal des notifications, réglages + chat de test de l'assistant IA
 
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
 - Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
-- Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé)
-- IA centrale d'analyse de la plateforme (détection d'anomalies, rapports automatiques pour Rogweb Service)
+- Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé — active à la fois l'IA par entreprise et les rapports de plateforme)
 - Applications mobiles natives (Flutter) et PWA
 - Déploiement Docker/Kubernetes et passage effectif à PostgreSQL/Redis
 

@@ -56,4 +56,11 @@ export class NotificationsService {
   findAllGlobal() {
     return this.logsRepo.find({ order: { createdAt: 'DESC' }, take: 200 });
   }
+
+  /** Échecs d'envoi récents, groupés par entreprise — signale un canal cassé (numéro invalide, etc.). */
+  async recentFailures(hours = 24) {
+    const threshold = new Date(Date.now() - hours * 3600000);
+    const failed = await this.logsRepo.find({ where: { status: NotificationStatus.FAILED } });
+    return failed.filter((f) => new Date(f.createdAt) >= threshold);
+  }
 }
