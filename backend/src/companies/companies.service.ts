@@ -116,6 +116,7 @@ export class CompaniesService {
       company.subscriptionEnd = end;
     }
     company.status = CompanyStatus.ACTIVE;
+    company.lastExpiryReminderThreshold = null;
     return this.companiesRepo.save(company);
   }
 
@@ -128,7 +129,42 @@ export class CompaniesService {
     base.setDate(base.getDate() + days);
     company.subscriptionEnd = base;
     company.status = CompanyStatus.ACTIVE;
+    company.lastExpiryReminderThreshold = null;
     return this.companiesRepo.save(company);
+  }
+
+  /**
+   * Entreprises actives dont un seuil de rappel (7j, 3j, 1j ou jour même)
+   * vient d'être franchi et n'a pas encore été notifié pour ce cycle.
+   * Utilisé par le scheduler de notifications.
+   */
+  async findCompaniesNeedingExpiryReminder(): Promise<
+    Array<{ company: Company; threshold: 7 | 3 | 1 | 0 }>
+  > {
+    const all = await this.findAll();
+    const thresholds: Array<7 | 3 | 1 | 0> = [7, 3, 1, 0];
+    const results: Array<{ company: Company; threshold: 7 | 3 | 1 | 0 }> = [];
+
+    for (const company of all) {
+      if (company.status !== CompanyStatus.ACTIVE) continue;
+      const daysRemaining = Math.ceil(
+        (new Date(company.subscriptionEnd).getTime() - Date.now()) / 86400000,
+      );
+      for (const t of thresholds) {
+        const alreadySent =
+          company.lastExpiryReminderThreshold !== null &&
+          company.lastExpiryReminderThreshold <= t;
+        if (daysRemaining <= t && !alreadySent) {
+          results.push({ company, threshold: t });
+          break; // un seul rappel par passage du scheduler, le plus pertinent
+        }
+      }
+    }
+    return results;
+  }
+
+  async markExpiryReminderSent(id: string, threshold: number): Promise<void> {
+    await this.companiesRepo.update({ id }, { lastExpiryReminderThreshold: threshold });
   }
 
   async remove(id: string): Promise<void> {

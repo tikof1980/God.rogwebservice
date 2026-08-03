@@ -79,6 +79,12 @@ export class Company {
   @Column({ type: 'text', nullable: true })
   aiPersonality: string;
 
+  // Dernier seuil de rappel d'expiration envoyé (7, 3, 1 ou 0 jour) — évite
+  // de renvoyer plusieurs fois la même alerte le même jour. Remis à null
+  // à chaque renouvellement/réactivation (nouveau cycle).
+  @Column({ type: 'int', nullable: true })
+  lastExpiryReminderThreshold: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

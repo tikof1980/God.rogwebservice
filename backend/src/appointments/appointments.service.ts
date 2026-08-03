@@ -92,6 +92,35 @@ export class AppointmentsService {
     await this.apptRepo.remove(appt);
   }
 
+  /** Variante globale pour le scheduler de notifications (toutes entreprises actives). */
+  async findAllPendingRemindersAcrossCompanies() {
+    const upcoming = await this.apptRepo.find({
+      where: { status: AppointmentStatus.CONFIRMED },
+      relations: ['client', 'company'],
+    });
+    const now = Date.now();
+    return upcoming
+      .map((a) => {
+        const diffH = (new Date(a.startTime).getTime() - now) / 3600000;
+        let which: '24h' | '2h' | '30min' | null = null;
+        if (diffH <= 24 && diffH > 2 && !a.reminder24hSent) which = '24h';
+        else if (diffH <= 2 && diffH > 0.5 && !a.reminder2hSent) which = '2h';
+        else if (diffH <= 0.5 && diffH > 0 && !a.reminder30minSent) which = '30min';
+        return which ? { appointment: a, which } : null;
+      })
+      .filter((x): x is { appointment: Appointment; which: '24h' | '2h' | '30min' } => x !== null);
+  }
+
+  async markReminderSent(id: string, which: '24h' | '2h' | '30min') {
+    const field =
+      which === '24h'
+        ? 'reminder24hSent'
+        : which === '2h'
+        ? 'reminder2hSent'
+        : 'reminder30minSent';
+    await this.apptRepo.update({ id }, { [field]: true });
+  }
+
   /**
    * Rendez-vous confirmés dont le rappel correspondant n'a pas encore été
    * envoyé — utilisé par le futur scheduler de notifications (WhatsApp/SMS/push).

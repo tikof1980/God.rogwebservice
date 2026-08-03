@@ -33,15 +33,22 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - **Pour brancher un vrai provider en production** : créer une classe (ex: `WaveAdapter`) implémentant `PaymentProviderAdapter` selon la doc officielle du provider, vérifier la signature du webhook dans `verifyWebhookSignature()`, puis la sélectionner dans `PaymentsService`
   - Testé de bout en bout : paiement Wave simulé → confirmation webhook → abonnement renouvelé automatiquement, idempotence vérifiée, stats de revenus (jour/mois/total)
 
+- **Module Notifications** (architecture d'adaptateurs par canal — WhatsApp, SMS, email, push)
+  - Scheduler automatique (`@nestjs/schedule`) : rappels de rendez-vous (24h/2h/30min avant, vérifié toutes les 5 min) et rappels d'expiration d'abonnement (J-7/J-3/J-1/jour même, vérifié chaque heure), tous idempotents (un seuil n'est notifié qu'une fois par cycle)
+  - `POST /api/notifications/trigger-appointment-reminders` et `/trigger-expiry-reminders` (super admin) — déclenchement manuel immédiat, utile en test comme en production
+  - `GET /api/notifications/mine` (entreprise) / `GET /api/notifications` (super admin) — journal de tous les envois
+  - `StubChannelAdapter` simule l'envoi (log console) sans appel réseau externe ; **pour brancher un vrai canal en production**, implémenter `NotificationChannelAdapter` (`/backend/src/notifications/providers/`) pour WhatsApp Business API / un agrégateur SMS local / SMTP, puis le sélectionner dans `NotificationsService`
+  - Testé de bout en bout : rappel RDV 24h envoyé + flag marqué, rappel expiration J-7 envoyé par email et WhatsApp simultanément, idempotence vérifiée sur relance
+
 - **Frontend Next.js** (`/frontend`)
   - `/login` → redirige selon le rôle (`super_admin` → `/dashboard`, sinon → `/workspace`)
   - `/dashboard` — Super Dashboard : stats globales, revenus, liste des entreprises, jauge de cycle d'abonnement, création/suspension/réactivation/renouvellement/suppression
-  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement
+  - `/workspace` — espace entreprise (company_admin/employee) : rendez-vous du jour, agenda complet, base clients avec historique fidélité, paiement/renouvellement d'abonnement, journal des notifications envoyées
 
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)
-- Notifications : WhatsApp Business API, SMS, emails automatiques, rappels J-7/J-3/J-1 (les entités le prévoient déjà — `reminder24hSent`/`reminder2hSent`/`reminder30minSent` sur `Appointment`, `findPendingReminders()` dans `AppointmentsService` — il manque le scheduler + les providers d'envoi)
+- Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`)
 - IA par entreprise (réponse client 24/7) + IA centrale d'analyse de la plateforme
 - Applications mobiles natives (Flutter) et PWA
 - Déploiement Docker/Kubernetes et passage effectif à PostgreSQL/Redis

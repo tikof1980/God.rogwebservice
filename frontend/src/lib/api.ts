@@ -97,4 +97,8 @@ export const api = {
   revenueStats: () => request('/api/payments/revenue'),
   recordManualPayment: (payload: Record<string, unknown>) =>
     request('/api/payments/manual', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // --- Notifications ---
+  myNotifications: () => request('/api/notifications/mine'),
+  allNotifications: () => request('/api/notifications'),
 };
