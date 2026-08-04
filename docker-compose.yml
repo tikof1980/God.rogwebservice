@@ -34,6 +34,7 @@ services:
       DB_USER: ${POSTGRES_USER:-rogweb}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ALLOWED_ORIGINS: ${PUBLIC_APP_URL:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy

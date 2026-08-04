@@ -77,6 +77,13 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - Choix assumé : dupliquer toute l'interface en Flutter aurait créé deux bases de code à maintenir indéfiniment pour un gain limité, alors que la PWA est déjà installable
   - `mobile/lib/main.dart` fourni et complet (WebView, gestion d'erreur hors-ligne, bouton retour Android, ouverture native des liens tel/mailto/WhatsApp) — **non testé ici** car Flutter n'est pas installé dans ce sandbox ; `mobile/README.md` détaille précisément les commandes à lancer chez vous (`flutter create`, remplacement des fichiers fournis, build)
 
+- **Durcissement sécurité / production**
+  - `helmet` : en-têtes de sécurité HTTP (HSTS, X-Content-Type-Options, X-Frame-Options…) sur toutes les réponses
+  - Rate limiting (`@nestjs/throttler`) : 60 req/min/IP par défaut sur toute l'API, limite renforcée à 8 req/min sur `/api/auth/login` (cible privilégiée du brute-force) et 30 req/min sur les webhooks publics (paiements, WhatsApp)
+  - CORS restreint aux domaines listés dans `ALLOWED_ORIGINS` en production (ouvert par défaut en développement)
+  - **Garde-fou de démarrage** : en production (`NODE_ENV=production`), le serveur refuse de démarrer (code de sortie 1, message explicite) si `JWT_SECRET` est absent ou égal à une valeur par défaut connue, ou si `DB_PASSWORD` est manquant avec PostgreSQL — empêche un déploiement silencieusement non sécurisé
+  - Testé : 429 après 8 tentatives de login en une minute, refus de démarrage confirmé sans secret, démarrage normal confirmé avec un vrai secret
+
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)

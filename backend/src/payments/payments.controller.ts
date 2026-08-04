@@ -7,6 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
+import { Throttle } from '@nestjs/throttler';
 import { InitiatePaymentDto, ManualPaymentDto } from './dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '../auth/guards';
 import { TenantActiveGuard } from '../common/tenant-active.guard';
@@ -64,6 +65,7 @@ export class PaymentsController {
   // AVANT de faire confiance au contenu. Le payload exact (nom des champs,
   // en-tête de signature) dépend de la doc de chaque provider.
   @Post('webhook/:provider')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   webhook(@Param('provider') provider: string, @Body() body: { reference: string; success: boolean; reason?: string }) {
     if (body.success) {
       return this.paymentsService.confirm(body.reference);

@@ -15,6 +15,7 @@ import { TenantActiveGuard } from '../common/tenant-active.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/current-user.decorator';
 import { UserRole } from '../users/user.entity';
 import { CompaniesService } from '../companies/companies.service';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('api/ai')
 export class AiController {
@@ -84,6 +85,7 @@ export class AiController {
   // Ici, on accepte directement companyId pour permettre la simulation/tests
   // tant que l'app WhatsApp Business n'est pas enregistrée.
   @Post('webhook/whatsapp')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async whatsappWebhook(
     @Body() body: { companyId?: string; phoneNumberId?: string; from: string; text: string },
   ) {
