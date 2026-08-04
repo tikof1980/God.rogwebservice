@@ -90,6 +90,8 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - **Garde-fou de démarrage** : en production (`NODE_ENV=production`), le serveur refuse de démarrer (code de sortie 1, message explicite) si `JWT_SECRET` est absent ou égal à une valeur par défaut connue, ou si `DB_PASSWORD` est manquant avec PostgreSQL — empêche un déploiement silencieusement non sécurisé
   - Testé : 429 après 8 tentatives de login en une minute, refus de démarrage confirmé sans secret, démarrage normal confirmé avec un vrai secret
 
+- **Déploiement rapide gratuit (Render)** — `render.yaml` à la racine décrit tout le déploiement (backend + frontend + PostgreSQL) pour un test en ligne sans Docker ni ligne de commande, via l'interface Render connectée à GitHub. Voir les instructions ci-dessous.
+
 ## Ce qui reste à brancher (hors portée de ce socle)
 
 - Vraies intégrations Wave/Orange Money/MTN Money (remplacer `StubPaymentAdapter` par de vraies implémentations avec les clés marchand)

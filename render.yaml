@@ -1,0 +1,68 @@
+databases:
+  - name: god-rogwebservice-db
+    plan: free
+    databaseName: god_rogwebservice
+    user: rogweb
+
+services:
+  - type: web
+    name: god-rogwebservice-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_TYPE
+        value: postgres
+      - key: DB_HOST
+        fromDatabase:
+          name: god-rogwebservice-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: god-rogwebservice-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: god-rogwebservice-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: god-rogwebservice-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: god-rogwebservice-db
+          property: password
+      - key: DB_SSL
+        value: "true"
+      # À définir manuellement après le premier déploiement, une fois l'URL
+      # du frontend connue (ex: https://god-rogwebservice-frontend.onrender.com)
+      # — voir les instructions après ce fichier.
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # Clé gratuite sur https://aistudio.google.com/apikey — à coller
+      # manuellement dans l'onglet "Environment" du service sur Render
+      # (jamais stockée dans ce fichier, qui est public sur GitHub).
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: web
+    name: god-rogwebservice-frontend
+    runtime: node
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # À définir manuellement après le premier déploiement, une fois l'URL
+      # du backend connue (ex: https://god-rogwebservice-backend.onrender.com)
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
