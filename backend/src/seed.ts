@@ -3,13 +3,15 @@ import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Company } from './companies/company.entity';
 import { User, UserRole } from './users/user.entity';
+import { getDatabaseConfig } from './config/database.config';
 
 async function seed() {
+  // Utilise la même config bascule SQLite/Postgres que l'application elle-
+  // même (getDatabaseConfig), pour ne jamais créer le super admin dans la
+  // mauvaise base par erreur.
   const ds = new DataSource({
-    type: 'sqlite',
-    database: process.env.DB_PATH || 'god_rogwebservice.sqlite',
+    ...(getDatabaseConfig() as any),
     entities: [Company, User],
-    synchronize: true,
   });
   await ds.initialize();
 

@@ -65,6 +65,12 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
   - Service worker généré automatiquement au build (`next-pwa`) : les appels `/api/*` restent toujours en réseau direct (jamais de cache sur les données métier), le reste des ressources statiques est mis en cache pour un chargement plus rapide et une tolérance aux coupures réseau ponctuelles
   - Le service worker est désactivé en développement (`next dev`) et actif uniquement en production (`next build && next start`)
 
+- **Migrations TypeORM** (PostgreSQL) — `synchronize` n'est plus jamais utilisé avec PostgreSQL, remplacé par de vraies migrations versionnées
+  - `backend/src/migrations/` contient la migration initiale, générée et **testée contre une vraie instance PostgreSQL** (installée temporairement dans cet environnement pour l'occasion), pas seulement écrite à l'aveugle
+  - Ce test a révélé un vrai bug de portabilité : les colonnes de dates étaient typées `datetime` (spécifique SQLite), incompatible avec PostgreSQL qui attend `timestamp` — ni l'un ni l'autre n'étant en fait universel, la colonne est maintenant laissée sans type explicite pour que TypeORM déduise automatiquement le bon type natif par moteur. `backend/src/seed.ts` avait aussi le type de base de données câblé en dur sur SQLite ; il utilise maintenant la même config bascule que l'application
+  - `migrationsRun: true` en production : les migrations s'appliquent automatiquement au démarrage (`NODE_ENV=production` + `DB_TYPE=postgres`) — testé sur une base PostgreSQL vierge, tables/contraintes/clés étrangères créées correctement, puis cycle fonctionnel complet (login, création d'entreprise) validé contre cette base réelle
+  - Commandes disponibles : `npm run migration:generate -- src/migrations/NomDeLaMigration`, `npm run migration:run`, `npm run migration:revert` (voir `backend/src/config/data-source.ts`)
+
 - **Déploiement Docker / Kubernetes**
   - `backend/Dockerfile` et `frontend/Dockerfile` : builds multi-étapes, images de production allégées, utilisateur non-root
   - Le backend bascule automatiquement SQLite (dev, par défaut) / PostgreSQL (prod, via `DB_TYPE=postgres` + `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`) — voir `backend/src/config/database.config.ts`
@@ -90,7 +96,6 @@ d'entrée existent, mais il faudra y brancher vos vraies clés API en production
 - Vraies intégrations WhatsApp Business API / SMS / SMTP (remplacer `StubChannelAdapter`) et vérification de signature du webhook Meta
 - Clé `GEMINI_API_KEY` en production (le code est prêt, il ne manque que la clé — active à la fois l'IA par entreprise et les rapports de plateforme)
 - Scaffold Flutter réel (`flutter create` + build) — voir `mobile/README.md`
-- Migrations TypeORM réelles avant mise en production sérieuse (actuellement `synchronize: true`, pratique en développement mais risqué en prod)
 - Test réel des images Docker et du déploiement Kubernetes sur un cluster (non testable dans cet environnement de développement)
 - Notifications push natives (Firebase Cloud Messaging) dans l'app mobile
 

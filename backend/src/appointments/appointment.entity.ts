@@ -41,7 +41,7 @@ export class Appointment {
   @Column()
   serviceLabel: string; // ex: "Coupe + Barbe", "Table pour 4", "Pressing costume"
 
-  @Column({ type: 'datetime' })
+  @Column()
   startTime: Date;
 
   @Column({ type: 'int', default: 30 })

@@ -75,6 +75,6 @@ export class Payment {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ nullable: true })
   confirmedAt: Date;
 }

@@ -64,10 +64,10 @@ export class Company {
   @Column({ unique: true })
   licenseKey: string;
 
-  @Column({ type: 'datetime' })
+  @Column()
   subscriptionStart: Date;
 
-  @Column({ type: 'datetime' })
+  @Column()
   subscriptionEnd: Date;
 
   @Column({ default: 30 })
