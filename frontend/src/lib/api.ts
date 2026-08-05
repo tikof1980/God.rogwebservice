@@ -48,10 +48,10 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 export const api = {
-  login: (email: string, password: string) =>
+  login: (identifier: string, password: string) =>
     request('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     }),
   listCompanies: () => request('/api/companies'),
   stats: () => request('/api/companies/stats'),

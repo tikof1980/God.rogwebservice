@@ -13,6 +13,6 @@ export class AuthController {
   // login est la cible privilégiée des attaques par force brute.
   @Throttle({ default: { limit: 8, ttl: 60000 } })
   login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+    return this.authService.login(dto.identifier, dto.password);
   }
 }

@@ -21,9 +21,11 @@ export class CreateCompanyDto {
   @Min(1)
   subscriptionDurationDays?: number;
 
-  // Compte admin créé automatiquement pour l'entreprise
-  @IsEmail()
-  adminEmail: string;
+  // Compte admin créé automatiquement pour l'entreprise — identifié par
+  // téléphone (plus adapté pour la majorité des commerces locaux qu'un
+  // email, souvent absent ou peu consulté).
+  @IsString()
+  adminPhone: string;
 
   @IsString()
   adminPassword: string;

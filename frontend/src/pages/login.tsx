@@ -4,7 +4,7 @@ import { api, setToken } from '@/lib/api';
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState('serykouame@gmail.com');
+  const [identifier, setIdentifier] = useState('serykouame@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.login(email, password);
+      const res = await api.login(identifier, password);
       setToken(res.accessToken);
       router.push(res.user.role === 'super_admin' ? '/dashboard' : '/workspace');
     } catch (err: any) {
@@ -33,12 +33,12 @@ export default function Login() {
         </div>
         <div style={styles.sub}>Console Super Administrateur</div>
 
-        <label style={styles.label}>Email</label>
+        <label style={styles.label}>Email ou téléphone</label>
         <input
           style={styles.input}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           required
         />
 

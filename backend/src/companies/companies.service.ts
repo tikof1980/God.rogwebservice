@@ -67,7 +67,7 @@ export class CompaniesService {
     // Création automatique du compte admin de l'entreprise
     const passwordHash = await bcrypt.hash(dto.adminPassword, 10);
     const admin = this.usersRepo.create({
-      email: dto.adminEmail,
+      phone: dto.adminPhone,
       passwordHash,
       fullName: dto.adminFullName,
       role: UserRole.COMPANY_ADMIN,

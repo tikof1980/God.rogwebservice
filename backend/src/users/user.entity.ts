@@ -19,8 +19,14 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  // L'un des deux (email OU phone) doit être renseigné pour permettre la
+  // connexion — le super admin utilise généralement un email, un
+  // company_admin créé par téléphone (ex: pressing, salon) utilise phone.
+  @Column({ unique: true, nullable: true })
   email: string;
+
+  @Column({ unique: true, nullable: true })
+  phone: string;
 
   @Column()
   passwordHash: string;

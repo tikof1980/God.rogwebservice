@@ -12,9 +12,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(email: string, password: string) {
+  async login(identifier: string, password: string) {
+    // L'identifiant peut être un email ou un numéro de téléphone selon
+    // comment le compte a été créé (super admin → email, company_admin
+    // créé via le formulaire entreprise → téléphone).
     const user = await this.usersRepo.findOne({
-      where: { email },
+      where: [{ email: identifier }, { phone: identifier }],
       relations: ['company'],
     });
 
@@ -46,6 +49,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
+        phone: user.phone,
         fullName: user.fullName,
         role: user.role,
         companyId: user.companyId,

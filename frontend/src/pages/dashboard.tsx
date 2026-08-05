@@ -325,7 +325,7 @@ function ActionBtn({
 function CreateCompanyModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({
     name: '', businessType: 'restaurant', phone: '', email: '',
-    subscriptionDurationDays: 30, adminEmail: '', adminPassword: '', adminFullName: '',
+    subscriptionDurationDays: 30, adminPhone: '', adminPassword: '', adminFullName: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -389,8 +389,8 @@ function CreateCompanyModal({ onClose, onCreated }: { onClose: () => void; onCre
         <Field label="Nom complet">
           <input style={styles.input} required value={form.adminFullName} onChange={(e) => set('adminFullName', e.target.value)} />
         </Field>
-        <Field label="Email admin">
-          <input style={styles.input} type="email" required value={form.adminEmail} onChange={(e) => set('adminEmail', e.target.value)} />
+        <Field label="Téléphone admin">
+          <input style={styles.input} type="tel" required value={form.adminPhone} onChange={(e) => set('adminPhone', e.target.value)} />
         </Field>
         <Field label="Mot de passe admin">
           <input style={styles.input} type="password" required minLength={6} value={form.adminPassword} onChange={(e) => set('adminPassword', e.target.value)} />
