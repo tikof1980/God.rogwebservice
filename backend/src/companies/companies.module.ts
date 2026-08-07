@@ -4,9 +4,10 @@ import { Company } from './company.entity';
 import { User } from '../users/user.entity';
 import { CompaniesService } from './companies.service';
 import { CompaniesController } from './companies.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Company, User])],
+  imports: [TypeOrmModule.forFeature([Company, User]), AuthModule],
   providers: [CompaniesService],
   controllers: [CompaniesController],
   exports: [CompaniesService],

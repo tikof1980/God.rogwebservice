@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomBytes, randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import { JwtService } from '@nestjs/jwt';
 import { Company, CompanyStatus } from './company.entity';
 import { User, UserRole } from '../users/user.entity';
 import { CreateCompanyDto, UpdateCompanyDto } from './dto';
@@ -12,6 +13,7 @@ export class CompaniesService {
   constructor(
     @InjectRepository(Company) private companiesRepo: Repository<Company>,
     @InjectRepository(User) private usersRepo: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   private generateTenantCode(): string {
@@ -178,6 +180,42 @@ export class CompaniesService {
 
   async markExpiryReminderSent(id: string, threshold: number): Promise<void> {
     await this.companiesRepo.update({ id }, { lastExpiryReminderThreshold: threshold });
+  }
+
+  /**
+   * Génère un token d'accès à l'espace d'une entreprise pour le super
+   * admin, sans qu'il ait besoin de connaître le mot de passe du compte
+   * de l'entreprise ni de se déconnecter/reconnecter. Utilise l'identité
+   * du premier compte company_admin trouvé pour cette entreprise.
+   */
+  async impersonate(companyId: string) {
+    const company = await this.findOne(companyId);
+    const admin = await this.usersRepo.findOne({
+      where: { companyId, role: UserRole.COMPANY_ADMIN },
+    });
+    if (!admin) {
+      throw new NotFoundException("Aucun compte administrateur trouvé pour cette entreprise.");
+    }
+
+    const payload = {
+      sub: admin.id,
+      email: admin.email,
+      role: admin.role,
+      companyId: admin.companyId,
+    };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      companyName: company.name,
+      user: {
+        id: admin.id,
+        email: admin.email,
+        phone: admin.phone,
+        fullName: admin.fullName,
+        role: admin.role,
+        companyId: admin.companyId,
+      },
+    };
   }
 
   async remove(id: string): Promise<void> {

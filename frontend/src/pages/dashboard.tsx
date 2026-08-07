@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { api, clearToken, getSession, platformAi } from '@/lib/api';
+import { api, clearToken, getSession, platformAi, enterCompanyWorkspace } from '@/lib/api';
 import { LedgerBar } from '@/components/LedgerBar';
 
 const BUSINESS_TYPES = [
@@ -85,6 +85,16 @@ export default function Dashboard() {
   function logout() {
     clearToken();
     router.push('/login');
+  }
+
+  async function manageCompany(id: string) {
+    try {
+      const res = await api.impersonate(id);
+      enterCompanyWorkspace(res.accessToken);
+      router.push('/workspace');
+    } catch (err: any) {
+      setError(err.message);
+    }
   }
 
   async function generateReport() {
@@ -221,6 +231,15 @@ export default function Dashboard() {
                   />
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={() => manageCompany(c.id)}
+                    style={{
+                      fontSize: 12, background: 'var(--gold)', color: '#1a1200',
+                      border: 'none', borderRadius: 6, padding: '6px 12px', fontWeight: 600,
+                    }}
+                  >
+                    Gérer
+                  </button>
                   {c.status === 'suspended' ? (
                     <ActionBtn onClick={() => handleAction(() => api.reactivate(c.id))}>
                       Réactiver

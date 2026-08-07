@@ -11,6 +11,31 @@ export function setToken(token: string) {
 
 export function clearToken() {
   window.sessionStorage.removeItem('god_token');
+  window.sessionStorage.removeItem('god_super_token');
+}
+
+/**
+ * Bascule du Super Dashboard vers l'espace d'une entreprise (via
+ * impersonation) sans perdre la session super admin — celle-ci est
+ * sauvegardée et peut être restaurée avec returnToSuperAdmin().
+ */
+export function enterCompanyWorkspace(companyToken: string) {
+  const current = getToken();
+  if (current) window.sessionStorage.setItem('god_super_token', current);
+  setToken(companyToken);
+}
+
+export function hasSuperAdminBackup(): boolean {
+  if (typeof window === 'undefined') return false;
+  return !!window.sessionStorage.getItem('god_super_token');
+}
+
+export function returnToSuperAdmin() {
+  const backup = window.sessionStorage.getItem('god_super_token');
+  if (backup) {
+    setToken(backup);
+    window.sessionStorage.removeItem('god_super_token');
+  }
 }
 
 export type Role = 'super_admin' | 'company_admin' | 'employee';
@@ -65,6 +90,7 @@ export const api = {
       body: JSON.stringify({ days }),
     }),
   remove: (id: string) => request(`/api/companies/${id}`, { method: 'DELETE' }),
+  impersonate: (id: string) => request(`/api/companies/${id}/impersonate`, { method: 'POST' }),
 
   // --- Espace entreprise (company_admin / employee) ---
   listClients: () => request('/api/clients'),

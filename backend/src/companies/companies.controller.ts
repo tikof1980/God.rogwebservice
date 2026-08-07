@@ -59,6 +59,13 @@ export class CompaniesController {
     return this.companiesService.renewSubscription(id, dto.days);
   }
 
+  // Accès direct à l'espace de l'entreprise pour le super admin (clients,
+  // rendez-vous, IA, paiements) sans changer de connexion.
+  @Post(':id/impersonate')
+  impersonate(@Param('id') id: string) {
+    return this.companiesService.impersonate(id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.companiesService.remove(id);
