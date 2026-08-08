@@ -27,8 +27,9 @@ export class CreateCompanyDto {
   @IsString()
   adminPhone: string;
 
+  @IsOptional()
   @IsString()
-  adminPassword: string;
+  adminPassword?: string;
 
   @IsString()
   adminFullName: string;

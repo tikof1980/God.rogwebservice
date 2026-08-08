@@ -344,7 +344,7 @@ function ActionBtn({
 function CreateCompanyModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({
     name: '', businessType: 'restaurant', phone: '', email: '',
-    subscriptionDurationDays: 30, adminPhone: '', adminPassword: '', adminFullName: '',
+    subscriptionDurationDays: 30, adminPhone: '', adminFullName: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -411,9 +411,9 @@ function CreateCompanyModal({ onClose, onCreated }: { onClose: () => void; onCre
         <Field label="Téléphone admin">
           <input style={styles.input} type="tel" required value={form.adminPhone} onChange={(e) => set('adminPhone', e.target.value)} />
         </Field>
-        <Field label="Mot de passe admin">
-          <input style={styles.input} type="password" required minLength={6} value={form.adminPassword} onChange={(e) => set('adminPassword', e.target.value)} />
-        </Field>
+        <div style={{ fontSize: 12, color: 'var(--text-lo)', marginTop: 4 }}>
+          Vous accéderez à cette entreprise directement via le bouton &quot;Gérer&quot; — aucun mot de passe à retenir.
+        </div>
 
         {error && <div style={styles.errorBanner}>{error}</div>}
 

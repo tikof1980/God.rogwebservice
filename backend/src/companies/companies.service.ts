@@ -67,7 +67,11 @@ export class CompaniesService {
     const saved = await this.companiesRepo.save(company);
 
     // Création automatique du compte admin de l'entreprise
-    const passwordHash = await bcrypt.hash(dto.adminPassword, 10);
+    // Mot de passe optionnel : le super admin gère désormais les entreprises
+    // via le bouton "Gérer" (impersonation), sans en avoir besoin au
+    // quotidien — un défaut simple est utilisé, modifiable plus tard si le
+    // personnel de l'entreprise doit se connecter directement.
+    const passwordHash = await bcrypt.hash(dto.adminPassword || 'entreprise123', 10);
     const admin = this.usersRepo.create({
       phone: dto.adminPhone,
       passwordHash,
