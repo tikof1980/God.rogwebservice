@@ -343,7 +343,7 @@ function ActionBtn({
 
 function CreateCompanyModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [form, setForm] = useState({
-    name: '', businessType: 'restaurant', phone: '', email: '',
+    name: '', businessType: 'restaurant', phone: '',
     subscriptionDurationDays: 30, adminPhone: '', adminFullName: '',
   });
   const [error, setError] = useState('');

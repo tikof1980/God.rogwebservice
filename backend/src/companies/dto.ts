@@ -1,5 +1,13 @@
 import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { BusinessType } from './company.entity';
+
+// Traite une chaîne vide comme "non fournie" — @IsOptional() de
+// class-validator ne le fait pas nativement (il ne bypasse que null/
+// undefined), ce qui causait des rejets "must be an email" sur un champ
+// optionnel simplement laissé vide par un formulaire.
+const emptyToUndefined = ({ value }: { value: unknown }) =>
+  value === '' ? undefined : value;
 
 export class CreateCompanyDto {
   @IsString()
@@ -9,10 +17,12 @@ export class CreateCompanyDto {
   businessType: BusinessType;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   phone?: string;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsEmail()
   email?: string;
 
@@ -28,6 +38,7 @@ export class CreateCompanyDto {
   adminPhone: string;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   adminPassword?: string;
 
@@ -45,10 +56,12 @@ export class UpdateCompanyDto {
   businessType?: BusinessType;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   phone?: string;
 
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsEmail()
   email?: string;
 }
